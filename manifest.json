@@ -1,0 +1,8 @@
+{
+    "manifest_version":3,
+    "name":"Wage Converter",
+    "version":"1.0",
+    "description":"Converts prices on websites into the hours you have to work to afford them.",
+    "permissions":["storage"], "action":{"default_popup":"popup.html"},
+    "content_scripts":[{"matches":["<all_urls>"],"js":["content.js"]}]
+}
