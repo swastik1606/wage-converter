@@ -1,25 +1,29 @@
-const PRICE_REGEX = /[$£€₹¥]\s?([0-9,]+(\.[0-9]{2})?)/g;
+const PRICE_REGEX = /([$£€₹¥])\s?([0-9,]+(\.[0-9]{2})?)/g;
 
-let userHourlyWage = 0;
+let userWages = {};
 const isAmazon=window.location.hostname.includes('amazon');
 
 function processTextNode(node) {
     if (node.nodeValue.match(/[$£€₹¥]/)) {
-        node.nodeValue=node.nodeValue.replace(PRICE_REGEX, (match, priceString)=>{
+
+        node.nodeValue=node.nodeValue.replace(PRICE_REGEX, (match, symbol, priceString)=>{
             const cleanPriceString=priceString.replace(/,/g, '');
             const price=parseFloat(cleanPriceString);
 
-            const hours=price/userHourlyWage;
+            const activeWage=userWages[symbol] || userWages['$'];
 
-            if (hours<1){
+            const hours=price/activeWage;
+
+            if(hours<1){
                 return `[${Math.round(hours*60)} mins]`;
             } else if (hours >100){
                 return `[${Math.round(hours)} hrs]`;
             } else {
-                return `[${hours.toFixed(1)} hrs]`
+                return `[${hours.toFixed(1)} hrs]`;
             }
+    
         });
-    }
+    }    
 }
 
 function convertPricesInNodes(rootNode){
@@ -48,23 +52,27 @@ function processAmazonNode(rootNode) {
 
         if (textToParse.match(/[$£€₹¥]/)){
 
+            const symbol=textToParse.match(/[$£€₹¥]/)[0];
+
             const numericString=textToParse.replace(/[^0-9.]/g, '');
             
             if (numericString && numericString!=='.') {
-            const price=parseFloat(numericString);
-            const hours=(price/userHourlyWage).toFixed(1);
+                const price=parseFloat(numericString);
 
-            el.innerHTML=`<span style="color: #B12704; font-weight: bold; font-size: 1.1em;">[${hours} hrs]</span>`;
-            el.dataset.converted="true";
+                const activeWage=userWages[symbol] || userWages['$'];
+                const hours=(price/activeWage).toFixed(1);
+
+                el.innerHTML=`<span style="color: #B12704; font-weight: bold; font-size: 1.1em;">[${hours} hrs]</span>`;
+                el.dataset.converted="true";
             }
         }
     });
 }
 
 
-chrome.storage.local.get(['hourlyWage'], (result) => {
-    if (result.hourlyWage && result.hourlyWage > 0) {
-        userHourlyWage=result.hourlyWage;
+chrome.storage.local.get(['userWages'], (result) => {
+    if (result.userWages && result.userWages['$'] > 0) {
+        userWages=result.userWages;
 
         if (isAmazon) {
             processAmazonNode(document.body);

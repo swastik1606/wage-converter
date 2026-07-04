@@ -1,27 +1,34 @@
-document.addEventListener('DOMContentLoaded', ()=>{
-    const wageInput=document.getElementById('wageInput');
-    const saveBtn=document.getElementById('saveBtn');
+document.addEventListener('DOMContentLoaded', () => {
+    const wageInput = document.getElementById('wageInput');
+    const saveBtn = document.getElementById('saveBtn');
 
-    chrome.storage.local.get(['hourlyWage'], (result)=>{
-        if (result.hourlyWage){
-            wageInput.value=result.hourlyWage;
+    chrome.storage.local.get(['userWages'], (result) => {
+        if (result.userWages && result.userWages['$']) {
+            wageInput.value = result.userWages['$'];
         }
     });
 
-    saveBtn.addEventListener('click', ()=>{
-        const wage=parseFloat(wageInput.value);
+    saveBtn.addEventListener('click', () => {
+        const baseWage = parseFloat(wageInput.value);
 
-        if(wage>0) {
-            chrome.storage.local.set({hourlyWage: wage}, ()=>{
-                const originalText=saveBtn.textContent;
+        if (baseWage > 0) {
+            const rates = {
+                '$': 1.00,
+                '€': 0.92,
+                '£': 0.79,
+                '₹': 95.20,
+                '¥': 155.00
+            };
+
+            const precomputedWages= {};
+            for (const symbol in rates) {
+                precomputedWages[symbol]=baseWage*rates[symbol];
+            }
+
+            chrome.storage.local.set({userWages: precomputedWages}, ()=> {
                 saveBtn.textContent='Saved!';
-                saveBtn.style.background='#28a745';
-
-                setTimeout(()=>{
-                    saveBtn.textContent=originalText;
-                    saveBtn.style.background='#007bff'
-                }, 1500)
-            })
+                setTimeout(()=> saveBtn.textContent='Save',1500);
+            });
         }
     })
 });
