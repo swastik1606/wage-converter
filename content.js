@@ -46,14 +46,17 @@ function processAmazonNode(rootNode) {
         const hiddenPrice=el.querySelector('.a-offscreen');
         const textToParse=hiddenPrice?hiddenPrice.textContent : el.textContent;
 
-        const numericString=textToParse.replace(/[^0-9.]/g, '');
+        if (textToParse.includes('$')){
 
-        if (numericString && numericString!=='.') {
+            const numericString=textToParse.replace(/[^0-9.]/g, '');
+            
+            if (numericString && numericString!=='.') {
             const price=parseFloat(numericString);
             const hours=(price/userHourlyWage).toFixed(1);
 
             el.innerHTML=`<span style="color: #B12704; font-weight: bold; font-size: 1.1em;">[${hours} hrs]</span>`;
             el.dataset.converted="true";
+            }
         }
     });
 }
