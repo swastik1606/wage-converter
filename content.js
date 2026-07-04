@@ -1,10 +1,10 @@
-const PRICE_REGEX = /\$\s?([0-9,]+(\.[0-9]{2})?)/g;
+const PRICE_REGEX = /[$£€₹¥]\s?([0-9,]+(\.[0-9]{2})?)/g;
 
 let userHourlyWage = 0;
 const isAmazon=window.location.hostname.includes('amazon');
 
 function processTextNode(node) {
-    if (node.nodeValue.includes('$')) {
+    if (node.nodeValue.match(/[$£€₹¥]/)) {
         node.nodeValue=node.nodeValue.replace(PRICE_REGEX, (match, priceString)=>{
             const cleanPriceString=priceString.replace(/,/g, '');
             const price=parseFloat(cleanPriceString);
@@ -46,7 +46,7 @@ function processAmazonNode(rootNode) {
         const hiddenPrice=el.querySelector('.a-offscreen');
         const textToParse=hiddenPrice?hiddenPrice.textContent : el.textContent;
 
-        if (textToParse.includes('$')){
+        if (textToParse.match(/[$£€₹¥]/)){
 
             const numericString=textToParse.replace(/[^0-9.]/g, '');
             
