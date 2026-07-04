@@ -9,7 +9,13 @@
     <h3>Set Hourly Wage</h3>
 
     <div class="input-group">
-        <span class="currency-symbol">$</span>
+        <select id="currencySelect">
+            <option value="$">$ USD</option>
+            <option value="£">£ GBP</option>
+            <option value="€">€ EUR</option>
+            <option value="₹">₹ INR</option>
+            <option value="¥">¥ JPY</option>
+        </select>
         <input type="number" id="wageInput" placeholder="e.g., 25.50" min="1" step="0.50">
     </div>
 
