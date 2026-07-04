@@ -1,4 +1,4 @@
-#Wage Converter
+# Wage Converter
 
 Wage Converter is a browser extension that helps you visualise the true cost of items and products on e-commerce webistes like Amazon, Etsy, Ebay, etc. 
 
