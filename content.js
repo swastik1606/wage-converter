@@ -6,7 +6,7 @@ const isAmazon=window.location.hostname.includes('amazon');
 function processTextNode(node) {
     if (node.nodeValue.includes('$')) {
         node.nodeValue=node.nodeValue.replace(PRICE_REGEX, (match, priceString)=>{
-            const cleanPriceString=priceString.replace(/ ,/g, '');
+            const cleanPriceString=priceString.replace(/,/g, '');
             const price=parseFloat(cleanPriceString);
 
             const hours=price/userHourlyWage;
@@ -35,25 +35,27 @@ function convertPricesInNodes(rootNode){
     }
 }
 
-function processAmazonNode(rootNode){
+function processAmazonNode(rootNode) {
     if (!rootNode.querySelectorAll) return;
-    const priceElements=rootNode.querySelectorAll('.a-price');
+
+    const priceElements=rootNode.querySelectorAll('.a-price, .a-color-price');
 
     priceElements.forEach(el => {
         if (el.dataset.converted) return;
 
-        const hiddenPrice = el.querySelectorAll('.a-offscreen');
-        if (hiddenPrice && hiddenPrice.textContent.includes('$')) {
-            const match= hiddenPrice.textContent.match(/\$\s?([0-9,]+(\.[0-9]{2})?)/);
-            if (match) {
-                const price=parseFloat(match[1].replace(/ ,/g, ''));
-                const hours= (price/userHourlyWage).toFixed(1);
-                
-                el.innerHTML= `<span style="color:red"; font-weight:bold;>[${hours} hrs</span>]`;
-                el.dataset.converted="true";
-            }
+        const hiddenPrice=el.querySelector('.a-offscreen');
+        const textToParse=hiddenPrice?hiddenPrice.textContent : el.textContent;
+
+        const numericString=textToParse.replace(/[^0-9.]/g, '');
+
+        if (numericString && numericString!=='.') {
+            const price=parseFloat(numericString);
+            const hours=(price/userHourlyWage).toFixed(1);
+
+            el.innerHTML=`<span style="color: #B12704; font-weight: bold; font-size: 1.1em;">[${hours} hrs]</span>`;
+            el.dataset.converted="true";
         }
-    })
+    });
 }
 
 
@@ -63,9 +65,10 @@ chrome.storage.local.get(['hourlyWage'], (result) => {
 
         if (isAmazon) {
             processAmazonNode(document.body);
-        } else {
-            convertPricesInNodes(document.body)
-        }
+        } 
+        
+        convertPricesInNodes(document.body)
+        
 
         const observer=new MutationObserver((mutations)=>{
             for (const mutation of mutations){
@@ -75,9 +78,10 @@ chrome.storage.local.get(['hourlyWage'], (result) => {
                             if (node.nodeName !== 'SCRIPT' && node.nodeName != 'STYLE' && node.nodeName !== 'NOSCRIPT') {
                                 if (isAmazon && node.nodeType === Node.ELEMENT_NODE) {
                                     processAmazonNode(node);
-                                } else {
-                                    convertPricesInNodes(node);
-                                }
+                                } 
+                                
+                                convertPricesInNodes(node);
+
                             }
                         }
                     }
